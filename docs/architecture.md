@@ -1,49 +1,51 @@
-# Architecture
+# Architecture Overview - Mewtwo (Autonomous Disaster Response Planner)
 
-## System Architecture
+## 1. System Architecture
+Mewtwo is designed as a robust, modular disaster response planning system that bridges the gap between raw emergency data and optimal resource allocation during the critical first 72 hours of a disaster.
++-----------------------------------------------------------------+
+|                       Coordinator Frontend                      |
+|                  (React / Dashboards / Maps)                    |
++--------------------------------+--------------------------------+
+| REST APIs / WebSockets
++--------------------------------v--------------------------------+
+|                         FastAPI Backend                         |
++--------------------------------+--------------------------------+
+|
++------------------------+------------------------+
+|                                                 |
+v                                                 v
++-----------------------+                         +-----------------------+
+|   Core Engine (Python)|                         |      Database         |
+|  - Pandas & NumPy     |                         |     (MongoDB)         |
+|  - Google OR-Tools    |                         +-----------------------+
+|  - Scikit-learn (ML)  |                                    ^
++-----------------------+                                    |
+|                                                 |
++------------------------+------------------------+
+|
+v
++-------------------------------+
+|        IBM Bob Integration    |
+| (Conversational & Automation) |
++-------------------------------+
+## 2. Component Breakdown
 
-[Describe the overall architecture of your system. Replace the Mermaid diagram below with your actual architecture.]
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Core Engine** | Python | Main decision logic and execution flow. |
+| **Data Processing** | Pandas + NumPy | Processing incoming disaster reports and constraints. |
+| **Priority Scoring** | Rule-based weighted scoring | Determine urgency and severity across affected zones. |
+| **Optimization** | Google OR-Tools | Allocate limited rescue teams and medical units efficiently. |
+| **Optimization Method** | MILP / Integer Programming | Mathematical modeling for team and resource distribution. |
+| **Database** | MongoDB | Store and retrieve rapidly changing incident data. |
+| **Backend** | FastAPI | Connect core engine to frontend interfaces via REST/WebSockets. |
+| **Real-time Updates** | WebSockets | Live status synchronization for emergency coordinators. |
+| **Maps & Routing** | Leaflet + OpenStreetMap & OSRM | Visualize affected zones and estimate travel distance/time. |
+| **Frontend** | React | Coordinator dashboard interface. |
+| **Optional ML** | Scikit-learn | Future demand prediction and pattern analysis. |
 
-```mermaid
-graph TD
-    A[User / Browser] -->|HTTP| B[Frontend - React]
-    B -->|REST API| C[Backend - FastAPI]
-    C -->|SDK| D[watsonx.ai]
-    C -->|Query| E[PostgreSQL]
-    C -->|Publish| F[Slack Webhook]
-    D -->|Inference Result| C
-```
-
-## Components
-
-| Component | Technology | Responsibility |
-|---|---|---|
-| Frontend | [e.g., React 18] | [e.g., Dashboard UI, user interaction] |
-| Backend API | [e.g., FastAPI] | [e.g., Business logic, orchestration] |
-| AI / ML | [e.g., watsonx.ai] | [e.g., Anomaly scoring, classification] |
-| Database | [e.g., PostgreSQL] | [e.g., Storing pipeline events and scores] |
-| Notifications | [e.g., Slack API] | [e.g., Alerting on threshold breaches] |
-
-## Data Flow
-
-[Describe how data moves through your system from input to output.]
-
-1. [e.g., Pipeline logs are ingested via a webhook from GitHub Actions]
-2. [e.g., Logs are preprocessed and chunked into 512-token segments]
-3. [e.g., Each chunk is sent to the watsonx.ai inference endpoint]
-4. [e.g., Anomaly scores are stored in PostgreSQL]
-5. [e.g., The React dashboard polls the API every 30 seconds to refresh]
-
-## Security Considerations
-
-[Note any security decisions relevant to the architecture — even if basic.]
-
-- [e.g., API keys stored in environment variables, never committed to git]
-- [e.g., All API routes require a Bearer token]
-- [e.g., Database credentials rotated via IBM Secrets Manager]
-
-## Scalability Notes
-
-[Optional: how would this scale beyond the hackathon prototype?]
-
-[e.g., "The FastAPI backend is stateless and could be horizontally scaled behind a load balancer. The watsonx.ai calls are the bottleneck and would benefit from request batching."]
+## 3. Workflow & Data Flow
+1. **Data Ingestion:** Incoming field reports, distress calls, and sensor data are captured and stored in MongoDB.
+2. **Prioritization:** The core engine processes inputs using Pandas and rule-based weighted scoring to calculate zone criticality.
+3. **Optimization & Allocation:** Google OR-Tools applies Mixed-Integer Linear Programming (MILP) to map available medical units and rescue teams to high-priority zones.
+4. **Coordination Interface:** FastAPI serves the computed plans to the React frontend and enables natural language workflow management via IBM Bob integration.
